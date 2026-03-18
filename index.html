@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cortiquincas 🎲 v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===== VARIABLES ===== */
+:root{
+  --gold:#e8a020;--gold2:#c9952a;--golddark:#7a4808;--goldpale:#f5e090;
+  --bg:#0a0500;--bg2:#120800;--bg3:#1a0f03;--bg4:#221200;
+  --text:#f5eed8;--textdim:#8b6020;--textfaint:#3a2008;
+  --purple:#8b44cc;--teal:#1a9870;--red:#b82038;--green:#1a9840;
+  --amber:#d08010;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Crimson Pro',Georgia,serif;color:var(--text);}
+
+/* ===== SCREENS ===== */
+.scr{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.scr.on{display:flex;}
+
+/* ===== MENU ===== */
+#s-menu{background:radial-gradient(ellipse 80% 60% at 50% 30%,#2a1200 0%,#060300 80%);}
+.menu-logo{text-align:center;margin-bottom:36px;}
+.menu-logo h1{font-family:'Cinzel',serif;font-size:clamp(2.2rem,7vw,4.2rem);color:var(--gold);
+  text-shadow:0 0 40px rgba(232,160,32,.5),0 2px 4px rgba(0,0,0,.8);line-height:1.1;letter-spacing:.04em;}
+.menu-logo h2{font-family:'Cinzel',serif;font-size:clamp(.8rem,2vw,1.1rem);color:var(--golddark);
+  letter-spacing:.25em;text-transform:uppercase;margin-top:10px;}
+.menu-logo .sub{font-size:.82rem;color:var(--textfaint);margin-top:8px;font-style:italic;letter-spacing:.1em;}
+.menu-deco{color:var(--gold);opacity:.25;font-size:1.3rem;letter-spacing:1.2em;text-align:center;margin:20px 0;}
+.menu-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.btn{padding:12px 28px;border:1.5px solid var(--gold2);background:transparent;color:var(--gold2);
+  font-family:'Crimson Pro',serif;font-size:1rem;cursor:pointer;border-radius:3px;
+  transition:all .2s;white-space:nowrap;letter-spacing:.05em;}
+.btn:hover:not(:disabled){background:rgba(201,149,42,.12);color:var(--goldpale);border-color:var(--gold);}
+.btn.prim{background:linear-gradient(135deg,#c9952a 0%,#a07020 100%);color:#0a0500;font-weight:700;border-color:var(--gold);}
+.btn.prim:hover:not(:disabled){background:linear-gradient(135deg,#e8a830 0%,#c08020 100%);}
+.btn:disabled{opacity:.3;cursor:default;}
+.menu-badge{font-size:.7rem;color:var(--textfaint);margin-top:22px;font-style:italic;}
+
+/* ===== SETUP ===== */
+#s-setup{background:radial-gradient(ellipse 80% 60% at 50% 30%,#2a1200 0%,#060300 80%);}
+.setup-box{background:rgba(10,6,0,.85);border:1px solid rgba(201,149,42,.25);padding:22px 26px;
+  border-radius:5px;width:min(560px,95vw);max-height:90vh;overflow-y:auto;backdrop-filter:blur(4px);}
+.setup-box h2{font-family:'Cinzel',serif;color:var(--gold);font-size:1.3rem;text-align:center;margin-bottom:18px;letter-spacing:.1em;}
+.cnt-row{display:flex;gap:10px;justify-content:center;margin-bottom:22px;}
+.cnt-btn{width:50px;height:50px;border-radius:50%;border:1.5px solid rgba(201,149,42,.25);
+  background:transparent;color:var(--gold2);font-family:'Cinzel',serif;font-size:1.3rem;cursor:pointer;transition:all .2s;}
+.cnt-btn.on{border-color:var(--gold);background:rgba(232,160,32,.15);color:var(--goldpale);}
+.p-row{margin-bottom:14px;padding:14px;background:rgba(0,0,0,.4);border-radius:4px;border:1px solid rgba(255,255,255,.06);}
+.p-row .plbl{font-family:'Cinzel',serif;font-size:.78rem;margin-bottom:8px;display:block;letter-spacing:.12em;text-transform:uppercase;}
+.p-row input{background:rgba(255,255,255,.07);border:1px solid rgba(201,149,42,.25);color:var(--text);
+  padding:7px 10px;width:100%;font-family:'Crimson Pro',serif;font-size:1rem;border-radius:3px;margin-bottom:10px;}
+.p-row input:focus{outline:none;border-color:var(--gold2);}
+.char-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.c-btn{padding:9px 3px;border:1.5px solid rgba(255,255,255,.1);background:rgba(0,0,0,.3);color:#666;
+  font-family:'Crimson Pro',serif;font-size:.66rem;cursor:pointer;border-radius:3px;text-align:center;
+  transition:all .2s;line-height:1.4;}
+.c-btn span{font-size:1.4rem;display:block;margin-bottom:3px;}
+.c-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(232,160,32,.12);}
+.setup-foot{display:flex;gap:12px;justify-content:center;margin-top:18px;}
+
+/* ===== GAME ===== */
+#s-game{flex-direction:row;align-items:stretch;background:#060300;}
+.board-area{flex:1;position:relative;overflow:hidden;min-width:0;}
+#board-canvas{position:absolute;inset:0;width:100%;height:100%;}
+#pieces-layer{position:absolute;inset:0;pointer-events:none;}
+.piece{position:absolute;width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.8);
+  display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;
+  font-size:.62rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);
+  transition:left .5s cubic-bezier(.4,0,.2,1),top .5s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 2px 8px rgba(0,0,0,.7);z-index:5;transform:translate(-50%,-50%);}
+.piece.cur{z-index:10;box-shadow:0 0 0 3px rgba(255,255,255,.9),0 3px 12px rgba(0,0,0,.8);animation:bob .6s ease-in-out infinite alternate;}
+@keyframes bob{from{transform:translate(-50%,-50%) translateY(-4px)}to{transform:translate(-50%,-50%) translateY(3px)}}
+
+/* ===== PANEL ===== */
+.panel{width:196px;background:var(--bg2);border-left:1px solid rgba(201,149,42,.15);display:flex;flex-direction:column;overflow:hidden;}
+.pt-turn{padding:12px 14px;background:rgba(201,149,42,.08);border-bottom:1px solid rgba(201,149,42,.15);}
+.pt-lbl{font-family:'Cinzel',serif;font-size:.58rem;color:var(--golddark);letter-spacing:.15em;text-transform:uppercase;}
+.pt-nm{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;margin-top:3px;}
+.pt-ch{font-size:.7rem;color:var(--golddark);font-style:italic;margin-top:2px;}
+.pt-round{font-family:'Cinzel',serif;font-size:.62rem;color:var(--textfaint);margin-top:4px;}
+.plist{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);}
+.pe{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+.pe:last-child{border:none;}
+.pe-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pe-nm{font-size:.72rem;color:var(--golddark);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pe-pos{font-size:.65rem;color:var(--textfaint);}
+.pe-skip{font-size:.56rem;color:#c04020;padding:1px 3px;background:rgba(192,64,32,.15);border-radius:2px;margin-left:2px;}
+.dice-area{padding:12px;display:flex;flex-direction:column;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,.05);}
+.die-box{width:68px;height:68px;background:linear-gradient(135deg,#ede4c0 0%,#c8b880 100%);border-radius:12px;
+  border:2.5px solid #8b6020;box-shadow:3px 3px 10px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:default;
+  transition:transform .1s;}
+.die-box.spin{animation:dshake .08s linear infinite;}
+@keyframes dshake{0%{transform:rotate(-8deg) scale(1.05)}50%{transform:rotate(8deg) scale(.96)}100%{transform:rotate(-8deg) scale(1.05)}}
+.die-ico{font-size:24px;line-height:1;}
+.die-num{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#1a0800;line-height:1;}
+.die-eff{font-size:.55rem;color:#5a3800;line-height:1;text-align:center;}
+#btn-roll{width:100%;padding:10px;font-size:.88rem;}
+.ab-area{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05);}
+.ab-lbl{font-family:'Cinzel',serif;font-size:.56rem;color:var(--golddark);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;}
+#btn-ab{width:100%;padding:8px;font-size:.72rem;border-color:var(--purple);color:var(--purple);}
+#btn-ab:hover:not(:disabled){background:rgba(139,68,204,.15);}
+.log-area{flex:1;padding:8px 12px;overflow-y:auto;}
+.log-lbl{font-family:'Cinzel',serif;font-size:.56rem;color:var(--golddark);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;}
+.log-e{font-size:.66rem;color:var(--golddark);margin-bottom:4px;line-height:1.4;padding-left:8px;
+  border-left:2px solid rgba(122,90,24,.25);}
+.log-e.fresh{color:var(--gold2);border-left-color:var(--gold2);}
+
+/* ===== MODALS ===== */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:200;padding:14px;}
+.mbg.on{display:flex;}
+.mbox{background:linear-gradient(160deg,#1c0d02 0%,#0f0700 100%);border:1.5px solid var(--gold2);
+  border-radius:5px;padding:24px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;animation:mpop .2s ease;}
+@keyframes mpop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.mbox h3{font-family:'Cinzel',serif;color:var(--gold);font-size:1.15rem;margin-bottom:5px;line-height:1.3;letter-spacing:.05em;}
+.mbox .msub{font-size:.78rem;color:var(--golddark);margin-bottom:14px;font-style:italic;}
+.q-body{font-size:.95rem;color:var(--text);margin-bottom:16px;line-height:1.7;background:rgba(255,255,255,.04);
+  padding:14px;border-radius:4px;border-left:3px solid var(--golddark);}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:13px;}
+.opt{padding:10px 11px;border:1px solid rgba(201,149,42,.25);background:rgba(255,255,255,.03);color:var(--gold2);
+  font-family:'Crimson Pro',serif;font-size:.8rem;cursor:pointer;text-align:left;border-radius:3px;transition:all .18s;line-height:1.45;}
+.opt:hover:not(:disabled){background:rgba(201,149,42,.12);border-color:var(--gold);}
+.opt.ok{background:rgba(26,100,50,.4);border-color:#4a9a4a;color:#90e090;}
+.opt.no{background:rgba(140,30,50,.35);border-color:#b04050;color:#e09090;}
+.opt:disabled{cursor:default;}
+.tbar{background:rgba(255,255,255,.08);border-radius:2px;height:5px;margin-bottom:13px;overflow:hidden;}
+.tbfill{height:100%;background:var(--gold2);transition:width 30s linear;border-radius:2px;}
+.q-res{text-align:center;font-size:.9rem;padding:8px 0 4px;display:none;}
+.mact{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+.eff-ico{font-size:3.2rem;text-align:center;margin-bottom:10px;}
+.eff-ttl{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);text-align:center;margin-bottom:8px;letter-spacing:.05em;}
+.eff-desc{font-size:.9rem;color:var(--gold2);text-align:center;line-height:1.65;margin-bottom:14px;}
+.card-ico{font-size:2.8rem;text-align:center;margin-bottom:10px;}
+.pick-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0;}
+.help-body{color:var(--gold2);font-size:.84rem;line-height:1.85;max-height:65vh;overflow-y:auto;}
+.help-body h4{font-family:'Cinzel',serif;color:var(--gold);font-size:.9rem;margin:14px 0 5px;letter-spacing:.06em;}
+
+/* ===== WIN ===== */
+#s-win{background:radial-gradient(ellipse 80% 60% at 50% 30%,#2a1200 0%,#060300 80%);}
+.win-ico{font-size:4.5rem;text-align:center;margin-bottom:14px;animation:winbounce 0.6s ease;}
+@keyframes winbounce{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.win-ttl{font-family:'Cinzel',serif;font-size:clamp(1.6rem,5vw,2.8rem);text-align:center;margin-bottom:8px;
+  text-shadow:0 0 30px rgba(232,160,32,.5);}
+.win-sub{font-size:1rem;color:var(--gold2);text-align:center;margin-bottom:24px;font-style:italic;}
+.win-tbl{background:rgba(255,255,255,.04);border:1px solid rgba(201,149,42,.18);padding:16px 20px;
+  border-radius:4px;width:min(380px,90vw);margin-bottom:22px;}
+.win-r{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.win-r:last-child{border:none;}
+.win-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.win-nm{flex:1;color:var(--text);font-size:.95rem;}
+.win-pos{font-size:.8rem;color:var(--golddark);}
+
+/* ===== CONFETTI ===== */
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;display:none;}
+#confetti-canvas.on{display:block;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .panel{width:148px;}
+  .opts{grid-template-columns:1fr;}
+  .char-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:420px){
+  #s-game{flex-direction:column;}
+  .panel{width:100%;height:120px;flex-direction:row;flex-wrap:nowrap;border-left:none;border-top:1px solid rgba(201,149,42,.15);}
+  .pt-turn,.plist,.log-area,.ab-area{padding:5px 8px;}
+  .log-area{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<div id="s-menu" class="scr on">
+  <div class="menu-logo">
+    <h1>Cortiquincas</h1>
+    <h2>O Jogo Literário</h2>
+    <div class="sub">Quincas Borba · O Cortiço · 2–4 Jogadores</div>
+  </div>
+  <div class="menu-btns">
+    <button class="btn prim" onclick="goSetup()">▶ Novo Jogo</button>
+    <button class="btn" onclick="openM('m-help')">📖 Como Jogar</button>
+  </div>
+  <div class="menu-deco">— ❧ —</div>
+  <div class="menu-badge">Ao vencedor, as batatas. — Humanitismo</div>
+</div>
+
+<!-- SETUP -->
+<div id="s-setup" class="scr">
+  <div class="setup-box">
+    <h2>⚙ Configurar Partida</h2>
+    <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--golddark);text-align:center;margin-bottom:12px;letter-spacing:.15em;text-transform:uppercase">Quantos Jogadores?</div>
+    <div class="cnt-row">
+      <button class="cnt-btn on" onclick="setCnt(2)">2</button>
+      <button class="cnt-btn" onclick="setCnt(3)">3</button>
+      <button class="cnt-btn" onclick="setCnt(4)">4</button>
+    </div>
+    <div id="p-rows"></div>
+    <div class="setup-foot">
+      <button class="btn" onclick="show('s-menu')">← Voltar</button>
+      <button class="btn prim" onclick="startGame()">Jogar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="scr">
+  <div class="board-area" id="board-area">
+    <canvas id="board-canvas"></canvas>
+    <div id="pieces-layer"></div>
+  </div>
+  <div class="panel">
+    <div class="pt-turn">
+      <div class="pt-lbl">Vez de</div>
+      <div class="pt-nm" id="pt-nm">—</div>
+      <div class="pt-ch" id="pt-ch"></div>
+      <div class="pt-round" id="pt-round">Rodada 1</div>
+    </div>
+    <div class="plist" id="plist"></div>
+    <div class="dice-area">
+      <div class="die-box" id="die-box">
+        <div class="die-ico" id="die-ico">🎲</div>
+        <div class="die-num" id="die-num">—</div>
+        <div class="die-eff" id="die-eff"></div>
+      </div>
+      <button class="btn prim" id="btn-roll" onclick="onRoll()">🎲 Rolar</button>
+    </div>
+    <div class="ab-area">
+      <div class="ab-lbl">Habilidade</div>
+      <button class="btn" id="btn-ab" onclick="onAbility()">✨ Usar</button>
+    </div>
+    <div class="log-area">
+      <div class="log-lbl">Log</div>
+      <div id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WIN -->
+<div id="s-win" class="scr">
+  <div class="win-ico">🏆</div>
+  <div class="win-ttl" id="win-ttl"></div>
+  <div class="win-sub" id="win-sub"></div>
+  <div class="win-tbl" id="win-tbl"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+    <button class="btn prim" onclick="goSetup()">▶ Jogar Novamente</button>
+    <button class="btn" onclick="show('s-menu')">🏠 Menu</button>
+  </div>
+</div>
+
+<!-- MODAL: QUESTION -->
+<div class="mbg" id="m-q">
+  <div class="mbox">
+    <h3>❓ Pergunta Literária</h3>
+    <div class="msub" id="q-sub">Acerte para avançar 2 casas!</div>
+    <div class="tbar"><div class="tbfill" id="tbar"></div></div>
+    <div class="q-body" id="q-body"></div>
+    <div class="opts" id="q-opts"></div>
+    <div class="q-res" id="q-res"></div>
+    <div class="mact"><button class="btn prim" id="btn-nq" onclick="afterQ()" style="display:none">Continuar →</button></div>
+  </div>
+</div>
+
+<!-- MODAL: CARD -->
+<div class="mbg" id="m-card">
+  <div class="mbox" style="text-align:center">
+    <div class="card-ico" id="cd-ico"></div>
+    <h3 id="cd-ttl"></h3>
+    <div class="msub">Carta do Destino</div>
+    <div style="font-size:.9rem;color:var(--text);line-height:1.65;margin-bottom:14px" id="cd-desc"></div>
+    <div class="pick-row" id="cd-pick"></div>
+    <div class="mact" id="cd-act"></div>
+  </div>
+</div>
+
+<!-- MODAL: EFFECT -->
+<div class="mbg" id="m-eff">
+  <div class="mbox" style="text-align:center">
+    <div class="eff-ico" id="ef-ico"></div>
+    <div class="eff-ttl" id="ef-ttl"></div>
+    <div class="eff-desc" id="ef-desc"></div>
+    <div class="mact"><button class="btn prim" onclick="closeEff()">OK</button></div>
+  </div>
+</div>
+
+<!-- MODAL: HELP -->
+<div class="mbg" id="m-help">
+  <div class="mbox">
+    <h3>📖 Como Jogar — Cortiquincas</h3>
+    <div class="help-body">
+      <h4>🎯 Objetivo</h4>
+      <p>Seja o primeiro a chegar à casa 41 (chegada)!</p>
+      <h4>🎲 Faces do Dado — Efeitos Especiais</h4>
+      <p>• <b>Face 1 — Armadilha:</b> Recua 1 + responde pergunta</p>
+      <p>• <b>Face 2 — Herança:</b> Move + 2 casas extras!</p>
+      <p>• <b>Face 3 — Normal:</b> Move sem efeito</p>
+      <p>• <b>Face 4 — Fofoca:</b> Move e escolhe adversário para perder turno</p>
+      <p>• <b>Face 5 — Carta:</b> Pesca uma Carta do Destino</p>
+      <p>• <b>Face 6 — Loucura:</b> Anda ao contrário + rola de novo!</p>
+      <h4>🏠 Casas Especiais</h4>
+      <p>• ❓ Pergunta — Acerte: +2 casas | Erre: fica parado</p>
+      <p>• 💰 Tesouro — Avança 3 casas extras!</p>
+      <p>• ⬆️ Atalho — Avança 3 casas</p>
+      <p>• 🃏 Carta — Evento aleatório</p>
+      <h4>👥 Personagens e Habilidades</h4>
+      <p>• <b>João Romão 💰</b> — Passiva: +1 em face 4/5 · Ativa: troca com o líder</p>
+      <p>• <b>Rubião 🌀</b> — Passiva: ignora 1ª armadilha · Ativa: dado duplo</p>
+      <p>• <b>Sofia 💋</b> — Passiva: pula 1 pergunta · Ativa: adversário perde turno</p>
+      <p>• <b>Bertoleza ✊</b> — Passiva: recua máx. 2 · Ativa: vê a resposta antes</p>
+      <h4>✨ Habilidade Ativa (botão roxo)</h4>
+      <p>Cada personagem pode usar sua habilidade ativa <b>uma vez por partida</b>, antes de rolar.</p>
+    </div>
+    <div class="mact" style="margin-top:18px"><button class="btn prim" onclick="closeM('m-help')">Entendi!</button></div>
+  </div>
+</div>
+
+<!-- CONFETTI -->
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           CORTIQUINCAS v2 — CONSTANTS                       ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+const DESIGN_W = 720, DESIGN_H = 500;
+const CELL = 46;
+
+// Pre-computed square positions [x, y] (top-left of cell, design coords)
+const SQ_POS = {
+  1:[656,440],2:[598,440],3:[540,440],4:[482,440],5:[424,440],
+  6:[366,440],7:[308,440],8:[250,440],9:[192,440],10:[134,440],
+  11:[76,440],12:[18,440],
+  13:[18,401],14:[18,358],15:[18,315],16:[18,272],17:[18,229],
+  18:[18,186],19:[18,143],20:[18,100],21:[18,57],22:[18,14],
+  23:[76,14],24:[134,14],25:[192,14],26:[250,14],27:[308,14],
+  28:[366,14],29:[424,14],30:[482,14],31:[540,14],32:[598,14],33:[656,14],
+  34:[656,57],35:[656,106],36:[656,155],37:[656,204],38:[656,253],
+  39:[656,302],40:[656,351],41:[656,400]
+};
+
+const SQTYPE = {
+  1:'start',2:'n',3:'card',4:'n',5:'adv',6:'gold',7:'n',8:'q',9:'adv',10:'n',
+  11:'q',12:'n',13:'card',14:'adv',15:'n',16:'n',17:'gold',18:'n',19:'card',20:'n',
+  21:'q',22:'n',23:'q',24:'gold',25:'n',26:'card',27:'adv',28:'n',29:'n',30:'n',
+  31:'adv',32:'q',33:'card',34:'n',35:'q',36:'n',37:'adv',38:'card',39:'q',40:'adv',41:'fin'
+};
+
+const SQ_DATA = {
+  start:{bg:'#0e2c18',border:'#2a8a4a',icon:'🏁',label:''},
+  fin:  {bg:'#2a1c00',border:'#d09010',icon:'🏆',label:''},
+  n:    {bg:'#0a0600',border:'#2a1800',icon:'',label:''},
+  q:    {bg:'#130828',border:'#7030b0',icon:'❓',label:''},
+  gold: {bg:'#1c1200',border:'#c09000',icon:'💰',label:''},
+  adv:  {bg:'#081c16',border:'#148a60',icon:'⬆',label:''},
+  card: {bg:'#1c0610',border:'#902030',icon:'🃏',label:''},
+};
+
+const COLORS = ['#e8a020','#b030d0','#e03060','#20a860'];
+
+const CHARS = {
+  joao:    {n:'João Romão',   i:'💰',d:'Ambição: +1 em face 4 ou 5'},
+  rubiao:  {n:'Rubião',       i:'🌀',d:'Herdeiro: ignora 1ª armadilha'},
+  sofia:   {n:'Sofia',        i:'💋',d:'Charme: pula 1 pergunta'},
+  bertoleza:{n:'Bertoleza',   i:'✊',d:'Resistência: max. recuo = 2'},
+};
+
+const DICE_FACES = [
+  {ico:'⚠️',num:'1',eff:'Armadilha'},
+  {ico:'📜',num:'2',eff:'Herança'},
+  {ico:'🎲',num:'3',eff:'Normal'},
+  {ico:'📣',num:'4',eff:'Fofoca'},
+  {ico:'🃏',num:'5',eff:'Carta'},
+  {ico:'🌀',num:'6',eff:'Loucura'},
+];
+
+const CARDS = [
+  {i:'📜',t:'Herança de Quincas',   d:'Fortuna inesperada! Avance 3 casas!',f:'adv3'},
+  {i:'💋',t:'Sofia Sorri Para Você',d:'Hipnotizados! Você e um adversário perdem 1 turno.',f:'pair-skip'},
+  {i:'📣',t:'Fofoca de Miranda',    d:'O jogador à sua esquerda avança 2 enquanto você fofocava.',f:'left2'},
+  {i:'✊',t:'Bertoleza Resiste',     d:'Ninguém se move nesta rodada. Pausa para reflexão.',f:'freeze'},
+  {i:'🥔',t:'Ao Vencedor, as Batatas!',d:'O líder rouba 1 casa de cada adversário. Humanitismo!',f:'leader'},
+  {i:'🔥',t:'Incêndio no Cortiço',  d:'Todos voltam 2 casas — exceto quem está em último.',f:'fire'},
+  {i:'🐕',t:'Cachorro Quincas Borba',d:'O fiel cão te guia! Role o dado mais uma vez!',f:'bonus-roll'},
+  {i:'✉️',t:'Pombinha Escreve',     d:'Escolha: avance 3 casas OU adversário recua 3.',f:'pombinha'},
+  {i:'🌀',t:'Delírio de Napoleão',  d:'Par = avança esse número. Ímpar = recua. Role o dado!',f:'napoleon'},
+  {i:'💃',t:'Rita Baiana Dança',    d:'Todos perdem turno hipnotizados. Você rola de novo depois!',f:'rita'},
+  {i:'🤝',t:'Negócio de João Romão',d:'Escolha com quem trocar de posição!',f:'swap'},
+  {i:'⭐',t:'Pergunta Bônus!',      d:'Acerte → +4 casas. Erre → perde próximo turno.',f:'bonusq'},
+  {i:'🪙',t:'Especulação Imobiliária',d:'Avance 2 casas. Puxe outra carta!',f:'chain2'},
+  {i:'🎭',t:'Carnaval do Cortiço',  d:'Troque de lugar com o jogador mais próximo de você!',f:'nearest'},
+  {i:'🌊',t:'Maré Alta',            d:'Os dois líderes voltam 3 casas. O último avança 2!',f:'tidal'},
+  {i:'🕯️',t:'Apagão no Cortiço',   d:'Você avança as casas que o adversário à sua direita tirar no próximo dado!',f:'adv3'},
+  {i:'🎪',t:'Circo da Vida',        d:'Você pula para a posição do penúltimo colocado!',f:'circus'},
+  {i:'💫',t:'Revelação Filosófica', d:'"Ao vencedor, as batatas!" — Avance imediatamente 4 casas.',f:'adv4'},
+  {i:'🔑',t:'A Chave do Cortiço',   d:'Abre todas as portas! Avance 5 casas.',f:'adv5'},
+  {i:'📰',t:'Jornal do Rio',        d:'Escândalo! O 1º colocado recua 4 casas.',f:'scandal'},
+];
+
+const QS = [
+  {q:"O que acontece com Rubião no fim da história?",opts:["Perde seus bens, enlouquece, retorna para Barbacena (MG) e morre.","Conquista o amor de Sofia e se vinga de Cristiano.","Torna-se um filósofo famoso no Rio de Janeiro.","Abandona o cão Quincas Borba e foge do país."],ans:0},
+  {q:"Como Cristiano e Sofia conhecem Rubião?",opts:["Numa briga de rua no Rio de Janeiro.","Numa viagem de trem ao Rio de Janeiro — criam amizade por interesse financeiro.","Eram vizinhos em Barbacena (MG).","Cristiano era médico de Rubião."],ans:1},
+  {q:"Qual é a relação de Rubião com Carlos Maria?",opts:["Rubião tem ciúmes de Carlos, que flertava com Sofia.","Rubião e Carlos eram sócios nos negócios.","Carlos era sobrinho de Rubião.","Carlos era o fiel escudeiro de Rubião."],ans:0},
+  {q:"Quem é Cristiano Palha?",opts:["O assassino de Rubião.","O herdeiro do cão Quincas Borba.","Esposo de Sofia e amigo de Rubião por interesses financeiros.","Um filósofo rival de Quincas Borba."],ans:2},
+  {q:"O que Rubião recebe de herança de Quincas Borba?",opts:["Uma chácara em Barbacena.","Toda a sua fortuna e a missão de cuidar do cão Quincas Borba.","O cachorro e uma carta filosófica apenas.","Nada — Quincas Borba era ingrato."],ans:1},
+  {q:"O que Rubião fazia antes de tornar-se rico?",opts:["Era comerciante em Vassouras.","Era professor primário em Barbacena (MG).","Era médico no Rio de Janeiro.","Era pescador em Santos."],ans:1},
+  {q:"Qual é o protagonista do livro Quincas Borba?",opts:["Cristiano Palha.","Quincas Borba (o filósofo).","Rubião.","Sofia."],ans:2},
+  {q:"Qual é uma das principais frases do Humanitismo?",opts:["As batatas para o vencedor.","Quem vencer continuará vivo.","Ao vencedor, as batatas.","A caminhada é longa e o chão é liso."],ans:2},
+  {q:"Como se chama a filosofia criada pelo personagem Quincas Borba?",opts:["Comunismo.","Humanismo.","Humanitismo.","Positivismo."],ans:2},
+  {q:"Qual é a trilogia machadiana em ordem?",opts:["Memórias Póstumas de Brás Cubas, Quincas Borba e Dom Casmurro.","Dom Casmurro, Quincas Borba e Memórias Póstumas.","Quincas Borba, Dom Casmurro e Memórias Póstumas.","Helena, Iaiá Garcia e Dom Casmurro."],ans:0},
+  {q:"Como a narrativa de Quincas Borba é conduzida?",opts:["Em 1ª pessoa por Rubião.","Em 3ª pessoa por um narrador onisciente.","Em 1ª pessoa por Machado de Assis.","Em 2ª pessoa (você)."],ans:1},
+  {q:"A qual escola literária pertence Quincas Borba?",opts:["Romantismo.","Naturalismo.","Modernismo.","Realismo."],ans:3},
+  {q:"O romance O Cortiço faz parte de qual escola literária?",opts:["Romantismo.","Naturalismo.","Realismo.","Pré-Modernismo."],ans:1},
+  {q:"O livro O Cortiço critica principalmente:",opts:["A escravidão no Nordeste.","As péssimas condições de vida nos cortiços cariocas.","A corrupção no governo imperial.","Os costumes da aristocracia rural."],ans:1},
+  {q:"Quem é o dono do cortiço em O Cortiço?",opts:["Miranda.","Jerônimo.","João Romão.","Firmo."],ans:2},
+  {q:"Qual personagem representa a força sedutora do Brasil em O Cortiço?",opts:["Bertoleza.","Pombinha.","Rita Baiana.","Sofia."],ans:2},
+  {q:"Sobre as personagens femininas de O Cortiço, qual afirmação é correta?",opts:["Rita Baiana seduz Jerônimo apenas para se vingar de Firmo.","Pombinha escreve cartas para os moradores do cortiço.","Bertoleza é nobre de origem e escravizada injustamente.","Estela ama profundamente Miranda."],ans:1},
+  {q:"Uma das grandes importâncias de O Cortiço é:",opts:["Ser o romance que melhor representa o Naturalismo no Brasil.","Ser o primeiro romance realista brasileiro.","Ser escrito em forma de cartas (romance epistolar).","Ter sido o livro mais vendido do Romantismo."],ans:0},
+  {q:"Qual desses personagens NÃO pertence ao universo de O Cortiço?",opts:["Miranda.","João Romão.","Bertoleza.","Rubião."],ans:3},
+  {q:"Quem é Bertoleza em O Cortiço?",opts:["Esposa de Miranda.","Escravizada que trabalha para João Romão e é por ele explorada.","Dançarina rival de Rita Baiana.","Professora das crianças do cortiço."],ans:1},
+  {q:"O Cortiço pode ser considerado um romance naturalista porque:",opts:["Descreve o ambiente e os personagens com determinismo biológico e social.","Narra aventuras românticas entre personagens idealizados.","Defende os valores morais da religião católica.","Apresenta uma visão otimista da sociedade brasileira."],ans:0},
+  {q:"Qual personagem passa por processo de 'abrasileiramento' em O Cortiço?",opts:["João Romão.","Miranda.","Jerônimo.","Firmo."],ans:2},
+  {q:"Em qual cidade se passa O Cortiço?",opts:["Salvador.","São Paulo.","Rio de Janeiro.","Recife."],ans:2},
+];
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           STATE                                             ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+let S = {
+  players:[], cur:0, phase:'roll', round:1,
+  rolling:false, dv:0,
+  qPool:[], curQ:null, isBonus:false,
+  curCard:null, bonusRoll:false, napoleonPending:false, peekAns:false,
+  effCb:null, afterQCb:null,
+  logs:[],
+};
+let setup = {cnt:2, chars:['joao','rubiao','sofia','bertoleza']};
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           BOARD DRAWING                                     ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+let boardCanvas, boardCtx, boardW, boardH, boardScaleX, boardScaleY;
+
+function initBoard(){
+  boardCanvas = document.getElementById('board-canvas');
+  const area = document.getElementById('board-area');
+  boardCanvas.width = area.clientWidth * (window.devicePixelRatio || 1);
+  boardCanvas.height = area.clientHeight * (window.devicePixelRatio || 1);
+  boardCanvas.style.width = area.clientWidth + 'px';
+  boardCanvas.style.height = area.clientHeight + 'px';
+  boardW = area.clientWidth;
+  boardH = area.clientHeight;
+  boardScaleX = boardW / DESIGN_W;
+  boardScaleY = boardH / DESIGN_H;
+  boardCtx = boardCanvas.getContext('2d');
+  boardCtx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  drawBoard();
+}
+
+function drawBoard(){
+  if(!boardCtx) return;
+  const ctx = boardCtx;
+  const W = boardW, H = boardH;
+  const sx = boardScaleX, sy = boardScaleY;
+
+  // Background
+  const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.65);
+  bg.addColorStop(0,'#1a0f03');
+  bg.addColorStop(1,'#060300');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,W,H);
+
+  // Subtle grid pattern
+  ctx.strokeStyle = 'rgba(201,149,42,0.04)';
+  ctx.lineWidth = 0.5;
+  const gs = 40*sx;
+  for(let x=0;x<W;x+=gs){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=gs){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Center area decoration
+  const cx1 = (18+CELL)*sx, cy1 = (14+CELL)*sy;
+  const cw = (656-18-CELL+4)*sx, ch = (440-14-CELL+4)*sy;
+  ctx.fillStyle = 'rgba(15,8,0,0.6)';
+  rrFill(ctx, cx1, cy1, cw, ch, 8*sx);
+  ctx.strokeStyle = 'rgba(201,149,42,0.18)';
+  ctx.lineWidth = 1.5;
+  rrStroke(ctx, cx1+4*sx, cy1+4*sy, cw-8*sx, ch-8*sy, 6*sx);
+  ctx.strokeStyle = 'rgba(201,149,42,0.08)';
+  ctx.lineWidth = 1;
+  rrStroke(ctx, cx1+10*sx, cy1+10*sy, cw-20*sx, ch-20*sy, 4*sx);
+
+  // Center title
+  const midX = W/2, midY = H/2;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(232,160,32,0.85)';
+  ctx.font = `700 ${Math.round(28*sx)}px Cinzel, serif`;
+  ctx.fillText('CORTIQUINCAS', midX, midY - 20*sy);
+  ctx.fillStyle = 'rgba(122,72,8,0.8)';
+  ctx.font = `${Math.round(13*sx)}px Crimson Pro, Georgia, serif`;
+  ctx.fillText('O Jogo Literário', midX, midY + 2*sy);
+  ctx.font = `italic ${Math.round(11*sx)}px Crimson Pro, Georgia, serif`;
+  ctx.fillStyle = 'rgba(90,50,8,0.7)';
+  ctx.fillText('Quincas Borba · O Cortiço', midX, midY + 18*sy);
+  ctx.fillStyle = 'rgba(60,35,5,0.6)';
+  ctx.font = `${Math.round(9*sx)}px Cinzel, serif`;
+  ctx.fillText('— ❧ —', midX, midY + 38*sy);
+
+  // Draw squares
+  for(let i=1;i<=41;i++) drawSquare(ctx, i, sx, sy);
+
+  // Outer board border
+  ctx.strokeStyle = 'rgba(201,149,42,0.35)';
+  ctx.lineWidth = 2;
+  rrStroke(ctx, 8*sx, 8*sy, W-16*sx, H-16*sy, 6*sx);
+}
+
+function drawSquare(ctx, num, sx, sy){
+  const [bx, by] = SQ_POS[num];
+  const x=bx*sx, y=by*sy, w=CELL*sx, h=CELL*sy;
+  const t = SQTYPE[num]||'n';
+  const d = SQ_DATA[t]||SQ_DATA.n;
+
+  // Shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 4;
+  ctx.fillStyle = d.bg;
+  rrFill(ctx, x, y, w, h, 3*sx);
+  ctx.shadowBlur = 0;
+
+  // Border
+  ctx.strokeStyle = d.border;
+  ctx.lineWidth = 1.5;
+  rrStroke(ctx, x, y, w, h, 3*sx);
+
+  // Highlight top edge
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  rrFill(ctx, x+1, y+1, w-2, h*0.35, 3*sx);
+
+  // Square number
+  ctx.fillStyle = d.border;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = `600 ${Math.round(8*sx)}px Cinzel, serif`;
+  ctx.fillText(num, x+w/2, y + 10*sy);
+
+  // Icon
+  if(d.icon){
+    ctx.textBaseline = 'middle';
+    ctx.font = `${Math.round(15*sx)}px serif`;
+    ctx.fillText(d.icon, x+w/2, y + h/2 + 3*sy);
+    ctx.textBaseline = 'alphabetic';
+  }
+}
+
+function rrFill(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+  ctx.fill();
+}
+function rrStroke(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+  ctx.stroke();
+}
+
+function updatePieces(){
+  const layer = document.getElementById('pieces-layer');
+  if(!layer) return;
+  layer.innerHTML = '';
+  const counts = {};
+  S.players.forEach((p,i)=>{
+    if(!counts[p.pos]) counts[p.pos]=[];
+    counts[p.pos].push(i);
+  });
+  const off=[[0,0],[12,-5],[-8,9],[8,9]];
+  S.players.forEach((p,i)=>{
+    const [bx,by]=SQ_POS[p.pos];
+    const cx=(bx+CELL/2)/DESIGN_W*100, cy=(by+CELL/2)/DESIGN_H*100;
+    const idxOnSq = counts[p.pos].indexOf(i);
+    const [ox,oy] = off[idxOnSq]||[0,0];
+    const el = document.createElement('div');
+    el.className='piece'+(i===S.cur?' cur':'');
+    el.style.background=p.color;
+    el.style.left=`calc(${cx}% + ${ox}px)`;
+    el.style.top=`calc(${cy}% + ${oy}px)`;
+    el.textContent = p.nm[0].toUpperCase();
+    el.title = p.nm;
+    layer.appendChild(el);
+  });
+}
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('s-game').classList.contains('on')) initBoard();
+});
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           SETUP UI                                          ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function goSetup(){
+  setup = {cnt:2, chars:['joao','rubiao','sofia','bertoleza']};
+  renderSetup();
+  show('s-setup');
+}
+function setCnt(n){
+  setup.cnt=n;
+  document.querySelectorAll('.cnt-btn').forEach((b,i)=>b.classList.toggle('on',i===n-2));
+  renderSetup();
+}
+function renderSetup(){
+  const keys=Object.keys(CHARS);
+  const div=document.getElementById('p-rows');
+  div.innerHTML='';
+  for(let i=0;i<setup.cnt;i++){
+    const sel=setup.chars[i]||keys[i];
+    div.innerHTML+=`<div class="p-row">
+      <label class="plbl" style="color:${COLORS[i]}">Jogador ${i+1}</label>
+      <input id="pn${i}" value="Jogador ${i+1}" placeholder="Nome">
+      <div class="char-grid">${keys.map(k=>`
+        <button class="c-btn${k===sel?' on':''}" id="cb${i}_${k}" onclick="pickChar(${i},'${k}')">
+          <span>${CHARS[k].i}</span>${CHARS[k].n}
+        </button>`).join('')}
+      </div></div>`;
+  }
+}
+function pickChar(pi,key){
+  setup.chars[pi]=key;
+  Object.keys(CHARS).forEach(k=>{
+    const b=document.getElementById(`cb${pi}_${k}`);
+    if(b) b.classList.toggle('on',k===key);
+  });
+}
+function startGame(){
+  const keys=Object.keys(CHARS);
+  S.players=[];
+  for(let i=0;i<setup.cnt;i++){
+    const el=document.getElementById(`pn${i}`);
+    const nm=el?el.value.trim()||`Jogador ${i+1}`:`Jogador ${i+1}`;
+    const ch=setup.chars[i]||keys[i];
+    S.players.push({nm,ch,pos:1,color:COLORS[i],skip:false,abilityUsed:false,skipQ:ch==='sofia'});
+  }
+  S.cur=0; S.phase='roll'; S.round=1; S.logs=[];
+  S.qPool=shuffle([...QS]);
+  S.bonusRoll=false; S.napoleonPending=false; S.peekAns=false;
+  show('s-game');
+  setTimeout(()=>{ initBoard(); refreshUI(); Sound.init(); },80);
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           MAIN UI                                           ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function show(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+function refreshUI(){
+  const p=S.players[S.cur];
+  const ch=CHARS[p.ch];
+  const nm=document.getElementById('pt-nm');
+  nm.textContent=p.nm; nm.style.color=p.color;
+  document.getElementById('pt-ch').textContent=`${ch.i} ${ch.n}`;
+  document.getElementById('pt-round').textContent=`Rodada ${S.round}`;
+  const roll=document.getElementById('btn-roll');
+  roll.disabled=S.phase!=='roll'||S.rolling;
+  roll.textContent=p.skip?'⏭ Turno pulado':'🎲 Rolar';
+  const ab=document.getElementById('btn-ab');
+  ab.disabled=p.abilityUsed||S.phase!=='roll';
+  ab.textContent=p.abilityUsed?`${ch.i} Usada`:`✨ ${ch.i} Habilidade`;
+  const pl=document.getElementById('plist');
+  pl.innerHTML=S.players.map((q,i)=>`
+    <div class="pe">
+      <div class="pe-dot" style="background:${q.color}"></div>
+      <div class="pe-nm" style="${i===S.cur?'color:'+q.color:''}">${q.nm}</div>
+      <div class="pe-pos">${q.pos}/41</div>
+      ${q.skip?'<div class="pe-skip">⏸</div>':''}
+    </div>`).join('');
+  updatePieces();
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           DICE                                              ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function onRoll(){
+  const p=S.players[S.cur];
+  if(p.skip){ p.skip=false; addLog(`${p.nm} pula turno`); nextTurn(); return; }
+  if(S.phase!=='roll'||S.rolling) return;
+  S.rolling=true; S.phase='anim';
+  document.getElementById('btn-roll').disabled=true;
+  Sound.play('diceStart');
+  const die=document.getElementById('die-box');
+  die.classList.add('spin');
+  let t=0, max=12+Math.floor(Math.random()*10);
+  const iv=setInterval(()=>{
+    const rf=rnd(6);
+    setDiceFace(rf);
+    if(++t>=max){
+      clearInterval(iv);
+      Sound.play('diceEnd');
+      die.classList.remove('spin');
+      const face=rnd(6);
+      setDiceFace(face);
+      S.dv=face+1; S.rolling=false;
+      setTimeout(()=>processDice(face), 400);
+    }
+  },75);
+}
+function setDiceFace(f){
+  const df=DICE_FACES[f];
+  document.getElementById('die-ico').textContent=df.ico;
+  document.getElementById('die-num').textContent=df.num;
+  document.getElementById('die-eff').textContent=df.eff;
+}
+
+function processDice(face){
+  const p=S.players[S.cur];
+  const val=face+1;
+  if(S.napoleonPending){
+    S.napoleonPending=false;
+    const fwd=val%2===0;
+    addLog(`${p.nm} tirou ${val} — ${fwd?'avança':'recua'} (Napoleão!)`);
+    move(S.cur, fwd?val:-val, ()=>nextTurn());
+    return;
+  }
+  addLog(`${p.nm} tirou ${val}`);
+  // João Romão passive
+  if(p.ch==='joao'&&(val===4||val===5)){
+    showEff('💰','João Romão — Ambição!',`+1 casa extra por tirar ${val}!`,()=>applyMove(face,val+1));
+    return;
+  }
+  applyMove(face,val);
+}
+
+function applyMove(face,val){
+  const p=S.players[S.cur];
+  if(face===0){ // Armadilha
+    if(p.ch==='rubiao'&&!p.abilityUsed){
+      p.abilityUsed=true;
+      showEff('🌀','Rubião — Passiva!','Você ignorou a Armadilha! (1x)',()=>move(S.cur,val,()=>land()));
+      return;
+    }
+    Sound.play('trap');
+    showEff('⚠️','Armadilha do Humanitismo!','Recua 1 casa e ainda responde uma pergunta!',()=>move(S.cur,-(1),()=>land('q')));
+    return;
+  }
+  if(face===1){ // Herança
+    showEff('📜','Herança de Quincas!',`Sorte! Você move ${val} + 2 casas extras!`,()=>move(S.cur,val+2,()=>land()));
+    return;
+  }
+  if(face===3){ showFofoca(val); return; }
+  if(face===4){ move(S.cur,val,()=>{ showEff('🃏','Carta do Destino!','Destino chama!',()=>drawCard()); }); return; }
+  if(face===5){
+    Sound.play('chaos');
+    showEff('🌀','Loucura de Rubião!','Anda ao contrário! Mas rola de novo...',()=>move(S.cur,-val,()=>{
+      S.phase='roll'; S.bonusRoll=true; addLog(`${S.players[S.cur].nm} rola de novo`); refreshUI();
+    }));
+    return;
+  }
+  move(S.cur,val,()=>land());
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           MOVEMENT & LANDING                                ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function move(pi,steps,cb){
+  const p=S.players[pi];
+  let np=p.pos+steps;
+  if(steps<0&&p.ch==='bertoleza') np=Math.max(p.pos-2,np);
+  np=Math.max(1,Math.min(41,np));
+  p.pos=np;
+  Sound.play('move');
+  updatePieces();
+  if(np>=41){ setTimeout(()=>doWin(pi),700); return; }
+  setTimeout(cb,650);
+}
+
+function land(force){
+  const p=S.players[S.cur];
+  const t=force||SQTYPE[p.pos]||'n';
+  if(t==='q')        showQ(false);
+  else if(t==='gold'){ Sound.play('bonus'); showEff('💰','Tesouro!','Encontrou um baú! Avança 3 casas!',()=>move(S.cur,3,()=>nextTurn())); }
+  else if(t==='adv') { Sound.play('bonus'); showEff('⬆️','Atalho!','Caminho livre! Avança 3 casas!',()=>move(S.cur,3,()=>nextTurn())); }
+  else if(t==='card') drawCard();
+  else if(t==='fin')  doWin(S.cur);
+  else nextTurn();
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           QUESTIONS                                         ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function showQ(isBonus){
+  if(!S.qPool.length) S.qPool=shuffle([...QS]);
+  S.curQ=S.qPool.pop();
+  S.isBonus=isBonus;
+  S.phase='q';
+  const p=S.players[S.cur];
+  if(p.ch==='sofia'&&p.skipQ&&!isBonus){
+    p.skipQ=false;
+    showEff('💋','Sofia — Passiva!','Você saltou a pergunta! (1x)',()=>nextTurn());
+    return;
+  }
+  document.getElementById('q-sub').textContent=isBonus
+    ?'Bônus: Acerte → +4 casas | Erre → perde turno':'Acerte para avançar 2 casas!';
+  document.getElementById('q-body').textContent=S.curQ.q;
+  const od=document.getElementById('q-opts');
+  od.innerHTML='';
+  const lts=['A','B','C','D'];
+  S.curQ.opts.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.textContent=`${lts[i]}. ${opt}`;
+    if(S.peekAns&&i===S.curQ.ans) b.style.outline='2px solid #4a9a4a';
+    b.onclick=()=>pickOpt(i);
+    od.appendChild(b);
+  });
+  S.peekAns=false;
+  document.getElementById('q-res').style.display='none';
+  document.getElementById('btn-nq').style.display='none';
+  const bar=document.getElementById('tbar');
+  bar.style.transition='none'; bar.style.width='100%';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    bar.style.transition='width 30s linear'; bar.style.width='0%';
+  }));
+  S._qtimer=setTimeout(()=>qTimeout(),30000);
+  openM('m-q');
+}
+function pickOpt(i){
+  clearTimeout(S._qtimer);
+  document.getElementById('tbar').style.width='0%';
+  const correct=i===S.curQ.ans;
+  document.querySelectorAll('#q-opts .opt').forEach((b,j)=>{
+    b.disabled=true;
+    if(j===S.curQ.ans) b.classList.add('ok');
+    else if(j===i&&!correct) b.classList.add('no');
+  });
+  const res=document.getElementById('q-res');
+  res.style.display='block';
+  const p=S.players[S.cur];
+  if(correct){
+    Sound.play('correct');
+    const bonus=S.isBonus?4:2;
+    res.textContent=`✅ Correto! +${bonus} casas!`; res.style.color='#90e090';
+    addLog(`${p.nm} acertou (+${bonus})`);
+    S.afterQCb=()=>move(S.cur,bonus,()=>nextTurn());
+  } else {
+    Sound.play('wrong');
+    res.textContent=S.isBonus?'❌ Errou! Perde próximo turno.':'❌ Errado. Fica parado.';
+    res.style.color='#e09090';
+    addLog(`${p.nm} errou`);
+    if(S.isBonus) S.afterQCb=()=>{ S.players[S.cur].skip=true; nextTurn(); };
+    else S.afterQCb=()=>nextTurn();
+  }
+  document.getElementById('btn-nq').style.display='inline-block';
+}
+function qTimeout(){
+  document.querySelectorAll('#q-opts .opt').forEach((b,j)=>{ b.disabled=true; if(j===S.curQ.ans) b.classList.add('ok'); });
+  const res=document.getElementById('q-res');
+  res.style.display='block'; res.textContent='⏱ Tempo!'; res.style.color='#e0a030';
+  S.afterQCb=()=>nextTurn();
+  document.getElementById('btn-nq').style.display='inline-block';
+}
+function afterQ(){ closeM('m-q'); if(S.afterQCb){ S.afterQCb(); S.afterQCb=null; } }
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           CARDS                                             ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function drawCard(){
+  Sound.play('card');
+  S.curCard=CARDS[rnd(CARDS.length)];
+  const c=S.curCard;
+  document.getElementById('cd-ico').textContent=c.i;
+  document.getElementById('cd-ttl').textContent=c.t;
+  document.getElementById('cd-desc').textContent=c.d;
+  document.getElementById('cd-pick').innerHTML='';
+  const act=document.getElementById('cd-act');
+  act.innerHTML='';
+  if(c.f==='pombinha'){
+    act.innerHTML=`<button class="btn prim" onclick="cardDo('pomb-adv')">⬆ Avançar 3</button>
+      <button class="btn" style="border-color:#b82038;color:#b82038" onclick="cardDo('pomb-back')">⬇ Adversário recua 3</button>`;
+  } else if(c.f==='swap'){
+    const others=S.players.map((p,i)=>i!==S.cur?`<button class="btn" onclick="cardDo('swap-${i}')">${p.nm}</button>`:'').join('');
+    if(others.trim()) document.getElementById('cd-pick').innerHTML=`<div style="color:var(--golddark);font-size:.8rem;margin-bottom:6px">Trocar com quem?</div>${others}`;
+    else act.innerHTML=`<button class="btn prim" onclick="cardDo('ok')">OK</button>`;
+  } else {
+    act.innerHTML=`<button class="btn prim" onclick="cardDo('ok')">Confirmar</button>`;
+  }
+  openM('m-card');
+}
+
+function cardDo(action){
+  closeM('m-card');
+  const p=S.players[S.cur];
+  const c=S.curCard;
+  if(action==='ok'){
+    switch(c.f){
+      case 'adv3': move(S.cur,3,()=>nextTurn()); break;
+      case 'adv4': move(S.cur,4,()=>nextTurn()); break;
+      case 'adv5': move(S.cur,5,()=>nextTurn()); break;
+      case 'pair-skip': p.skip=true; S.players[(S.cur+1)%S.players.length].skip=true; nextTurn(); break;
+      case 'left2': move((S.cur+S.players.length-1)%S.players.length,2,()=>nextTurn()); break;
+      case 'freeze': S.players.forEach(q=>{if(q!==p)q.skip=true;}); addLog('Todos ficam parados!'); nextTurn(); break;
+      case 'leader':{
+        const ldr=S.players.reduce((a,b)=>b.pos>a.pos?b:a);
+        if(ldr!==p){ S.players.filter(q=>q!==ldr).forEach(q=>{q.pos=Math.max(1,q.pos-1); ldr.pos=Math.min(41,ldr.pos+1);}); updatePieces(); }
+        addLog(`${ldr.nm} roubou 1 de cada`); nextTurn(); break;
+      }
+      case 'fire':{
+        const lst=S.players.reduce((a,b)=>b.pos<a.pos?b:a);
+        S.players.forEach(q=>{if(q!==lst) q.pos=Math.max(1,q.pos-2);}); updatePieces();
+        addLog('🔥 Incêndio! Todos -2 exceto último'); nextTurn(); break;
+      }
+      case 'bonus-roll': S.bonusRoll=true; S.phase='roll'; addLog(`${p.nm} rola de novo`); refreshUI(); break;
+      case 'napoleon': S.napoleonPending=true; S.phase='roll'; refreshUI(); break;
+      case 'rita': S.players.forEach(q=>q.skip=true); p.skip=false; S.bonusRoll=true; S.phase='roll'; addLog('Rita dança! Todos perdem turno'); refreshUI(); break;
+      case 'bonusq': showQ(true); break;
+      case 'chain2': move(S.cur,2,()=>drawCard()); break;
+      case 'nearest':{
+        if(S.players.length<2){ nextTurn(); break; }
+        const near=S.players.filter((_,i)=>i!==S.cur).reduce((a,b)=>Math.abs(b.pos-p.pos)<Math.abs(a.pos-p.pos)?b:a);
+        const tmp=p.pos; p.pos=near.pos; near.pos=tmp;
+        updatePieces(); addLog(`${p.nm} trocou com ${near.nm}`); nextTurn(); break;
+      }
+      case 'tidal':{
+        const sorted=[...S.players].sort((a,b)=>b.pos-a.pos);
+        if(sorted.length>=2){ sorted[0].pos=Math.max(1,sorted[0].pos-3); sorted[1].pos=Math.max(1,sorted[1].pos-3); }
+        const last=sorted[sorted.length-1]; last.pos=Math.min(41,last.pos+2);
+        updatePieces(); addLog('🌊 Maré! Líderes -3, último +2'); nextTurn(); break;
+      }
+      case 'circus':{
+        const sorted=[...S.players].sort((a,b)=>b.pos-a.pos);
+        const penultimate=sorted[Math.max(0,sorted.length-2)];
+        p.pos=penultimate.pos; updatePieces(); addLog(`${p.nm} foi para posição de ${penultimate.nm}`); nextTurn(); break;
+      }
+      case 'scandal':{
+        const leader=S.players.reduce((a,b)=>b.pos>a.pos?b:a);
+        leader.pos=Math.max(1,leader.pos-4); updatePieces(); addLog(`📰 Escândalo! ${leader.nm} recua 4`); nextTurn(); break;
+      }
+      default: nextTurn();
+    }
+  } else if(action==='pomb-adv'){ move(S.cur,3,()=>nextTurn()); }
+  else if(action==='pomb-back'){
+    const others=S.players.filter((_,i)=>i!==S.cur);
+    if(others.length){ const tgt=others.reduce((a,b)=>b.pos>a.pos?b:a); move(S.players.indexOf(tgt),-3,()=>nextTurn()); }
+    else nextTurn();
+  } else if(action.startsWith('swap-')){
+    const ti=parseInt(action.split('-')[1]);
+    const tmp=p.pos; p.pos=S.players[ti].pos; S.players[ti].pos=tmp;
+    updatePieces(); addLog(`${p.nm} trocou com ${S.players[ti].nm}`); nextTurn();
+  } else nextTurn();
+}
+
+function showFofoca(val){
+  if(S.players.length<2){ move(S.cur,val,()=>land()); return; }
+  S.curCard={f:'fofoca',val};
+  document.getElementById('cd-ico').textContent='📣';
+  document.getElementById('cd-ttl').textContent='Fofoca do Cortiço!';
+  document.getElementById('cd-desc').textContent=`Você move ${val} casas. Escolha quem perde o próximo turno:`;
+  document.getElementById('cd-pick').innerHTML=S.players.map((p,i)=>i!==S.cur?`<button class="btn" onclick="doFofoca(${i},${val})">${p.nm}</button>`:'').join('');
+  document.getElementById('cd-act').innerHTML='';
+  openM('m-card');
+}
+function doFofoca(ti,val){ closeM('m-card'); S.players[ti].skip=true; addLog(`${S.players[ti].nm} perde turno (fofoca)`); move(S.cur,val,()=>land()); }
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           ABILITIES                                         ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function onAbility(){
+  const p=S.players[S.cur];
+  if(p.abilityUsed||S.phase!=='roll') return;
+  p.abilityUsed=true;
+  switch(p.ch){
+    case 'joao':{
+      const ahead=S.players.filter((_,i)=>i!==S.cur&&S.players[i].pos>p.pos);
+      if(!ahead.length){ p.abilityUsed=false; showEff('💰','João Romão','Você já está na frente de todos!',()=>refreshUI()); return; }
+      const tgt=ahead.reduce((a,b)=>b.pos<a.pos?b:a);
+      const tmp=p.pos; p.pos=tgt.pos; tgt.pos=tmp;
+      addLog(`💰 ${p.nm} trocou com ${tgt.nm}!`); updatePieces(); refreshUI(); break;
+    }
+    case 'rubiao':
+      showEff('🌀','Rubião — Delírio!','Esta rodada você move o DOBRO!',()=>{
+        S._rubiaoDouble=true; refreshUI();
+      });
+      break;
+    case 'sofia':{
+      if(S.players.length<2){ p.abilityUsed=false; refreshUI(); return; }
+      S.curCard={f:'sofia-ab'};
+      document.getElementById('cd-ico').textContent='💋';
+      document.getElementById('cd-ttl').textContent='Sofia — A Sedução';
+      document.getElementById('cd-desc').textContent='Escolha um adversário para perder o próximo turno:';
+      document.getElementById('cd-pick').innerHTML=S.players.map((q,i)=>i!==S.cur?`<button class="btn" onclick="doSofia(${i})">${q.nm}</button>`:'').join('');
+      document.getElementById('cd-act').innerHTML='';
+      openM('m-card'); break;
+    }
+    case 'bertoleza':
+      S.peekAns=true;
+      showEff('✊','Bertoleza — Denúncia!','A resposta correta será destacada na próxima pergunta!',()=>refreshUI());
+      break;
+  }
+}
+function doSofia(ti){ closeM('m-card'); S.players[ti].skip=true; addLog(`💋 ${S.players[ti].nm} perde turno (Sofia)`); refreshUI(); }
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           TURNS                                             ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function nextTurn(){
+  if(S.bonusRoll){ S.bonusRoll=false; S.phase='roll'; refreshUI(); return; }
+  S.cur=(S.cur+1)%S.players.length;
+  if(S.cur===0) S.round++;
+  S.phase='roll';
+  if(S.players[S.cur].skip){
+    S.players[S.cur].skip=false;
+    addLog(`${S.players[S.cur].nm} pula turno`);
+    setTimeout(()=>nextTurn(), 800);
+    return;
+  }
+  refreshUI();
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           WIN                                               ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function doWin(pi){
+  Sound.play('win');
+  const p=S.players[pi];
+  document.getElementById('win-ttl').textContent=`${p.nm} Venceu!`;
+  document.getElementById('win-ttl').style.color=p.color;
+  document.getElementById('win-sub').textContent=`${CHARS[p.ch].i} ${CHARS[p.ch].n} — Ao vencedor, as batatas!`;
+  const sorted=[...S.players].sort((a,b)=>b.pos-a.pos);
+  document.getElementById('win-tbl').innerHTML=sorted.map((q,i)=>`
+    <div class="win-r">
+      <div style="width:24px;color:var(--golddark)">${['🥇','🥈','🥉','4️⃣'][i]}</div>
+      <div class="win-dot" style="background:${q.color}"></div>
+      <div class="win-nm" style="${q===p?'color:'+q.color:''}">${q.nm}</div>
+      <div class="win-pos">Casa ${q.pos}/41 · ${S.round} rodadas</div>
+    </div>`).join('');
+  show('s-win');
+  startConfetti(p.color);
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           EFFECTS / MODALS                                  ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function showEff(ico,ttl,desc,cb){
+  document.getElementById('ef-ico').textContent=ico;
+  document.getElementById('ef-ttl').textContent=ttl;
+  document.getElementById('ef-desc').textContent=desc;
+  S.effCb=cb; openM('m-eff');
+}
+function closeEff(){ closeM('m-eff'); if(S.effCb){ S.effCb(); S.effCb=null; } }
+function openM(id){ document.getElementById(id).classList.add('on'); }
+function closeM(id){ document.getElementById(id).classList.remove('on'); }
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           SOUND ENGINE (Web Audio API)                      ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+const Sound = {
+  ctx: null,
+  enabled: true,
+  init(){
+    if(!this.ctx) try{ this.ctx=new(window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  },
+  play(t){
+    if(!this.enabled||!this.ctx) return;
+    if(this.ctx.state==='suspended') this.ctx.resume();
+    switch(t){
+      case 'diceStart': this._noise(0.15,0.08); break;
+      case 'diceEnd':   this._tone([440,550],0.2,0.1); break;
+      case 'move':      this._tone([330],0.12,0.06); break;
+      case 'bonus':     this._tone([440,550,660],0.35,0.12); break;
+      case 'trap':      this._tone([220,180],0.4,0.1,'sawtooth'); break;
+      case 'card':      this._tone([500,600],0.2,0.08); break;
+      case 'correct':   this._tone([523,659,784],0.5,0.14); break;
+      case 'wrong':     this._tone([300,200],0.5,0.1,'triangle'); break;
+      case 'chaos':     this._noise(0.2,0.15); break;
+      case 'win':       [523,659,784,1047].forEach((f,i)=>setTimeout(()=>this._tone([f],0.4,0.18),i*130)); break;
+    }
+  },
+  _tone(freqs,dur,vol,type='sine'){
+    const ctx=this.ctx;
+    freqs.forEach((freq,i)=>{
+      setTimeout(()=>{
+        const osc=ctx.createOscillator();
+        const gain=ctx.createGain();
+        osc.type=type; osc.frequency.value=freq;
+        gain.gain.setValueAtTime(vol,ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime+dur);
+      },i*80);
+    });
+  },
+  _noise(vol,dur){
+    const ctx=this.ctx;
+    const n=ctx.sampleRate*dur;
+    const buf=ctx.createBuffer(1,n,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(n*0.4));
+    const src=ctx.createBufferSource();
+    const gain=ctx.createGain();
+    gain.gain.value=vol; src.buffer=buf;
+    src.connect(gain); gain.connect(ctx.destination); src.start();
+  }
+};
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           CONFETTI                                          ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function startConfetti(winColor){
+  const canvas=document.getElementById('confetti-canvas');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  canvas.classList.add('on');
+  const ctx=canvas.getContext('2d');
+  const palettes=['#e8a020','#c9952a','#f5e090',winColor,'#ffffff','#f0d060'];
+  const particles=Array.from({length:140},()=>({
+    x:Math.random()*canvas.width, y:-20-Math.random()*100,
+    vx:(Math.random()-0.5)*4, vy:2+Math.random()*4,
+    angle:Math.random()*Math.PI*2, va:(Math.random()-0.5)*0.2,
+    w:6+Math.random()*10, h:4+Math.random()*6,
+    color:palettes[rnd(palettes.length)], life:1
+  }));
+  let frame=0;
+  function loop(){
+    if(frame++>240){ canvas.classList.remove('on'); return; }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.angle+=p.va;
+      p.vy+=0.06; p.life-=0.004;
+      if(p.y>canvas.height+20) p.y=-20;
+      ctx.save();
+      ctx.translate(p.x,p.y); ctx.rotate(p.angle);
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=p.color;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║           UTILS                                             ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function rnd(n){ return Math.floor(Math.random()*n); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function addLog(m){
+  S.logs.unshift(m); if(S.logs.length>30) S.logs.pop();
+  const d=document.getElementById('log-list');
+  if(d) d.innerHTML=S.logs.map((l,i)=>`<div class="log-e${i===0?' fresh':''}">${l}</div>`).join('');
+}
+
+// ── INIT
+renderSetup();
+</script>
+</body>
+</html>
